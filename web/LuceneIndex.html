@@ -1,0 +1,110 @@
+<!--This page is the page that go to the lucence indexing or hadoop indexing -->
+<!DOCTYPE html>
+<html ng-app="myApp" ng-controller="luceneCtrl">
+<head>
+    <meta charset="utf-8">
+    <script src="./node_modules/angular/angular.min.js"></script>
+    <link rel="stylesheet" href="http://apps.bdimg.com/libs/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./assets/styles.css">
+    <title>{{"Search Results: Lucene Index"}}</title>
+</head>
+<body >
+
+<div id="divMain">
+    <table class="table table-bordered">
+        <tr>
+            <th>index</th>
+            <th>Username</th>
+            <th>Tweets</th>
+        </tr>
+        <tr ng-repeat="x in items">
+            <td>{{ $index + 1 }}</td>
+            <td ng-bind="x.username"></td>
+            <td ng-bind="x.tweets"></td>
+        </tr>
+    </table>
+    <nav>
+        <ul class="pagination">
+            <li>
+                <a ng-click="Previous()">
+                    <span>Last Page</span>
+                </a>
+            </li>
+            <li ng-repeat="page in pageList" ng-class="{active: isActivePage(page)}">
+                <a ng-click="selectPage(page)">{{ page }}</a>
+            </li>
+            <li>
+                <a ng-click="Next()">
+                    <span>Next Page</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<script>
+    var app = angular.module('myApp', []);
+    app.config(['$locationProvider', function ($locationProvider) {
+        $locationProvider.html5Mode({
+            enabled: true,
+            requireBase: false
+        });
+    }]);
+    app.controller('luceneCtrl', ['$scope', '$http', '$location', function ($scope, $http, $location) {
+        var url = "luceneIndex.do?query=" + $location.search().query;
+        $http.get(url)
+            .then(function (result) {
+                $scope.data = result.data;
+
+                $scope.pageSize = 10;
+                $scope.pages = Math.ceil($scope.data.length / $scope.pageSize);
+                $scope.newPages = $scope.pages > 5 ? 5 : $scope.pages;
+                $scope.pageList = [];
+                $scope.selPage = 1;
+
+                $scope.setData = function () {
+                    $scope.items = $scope.data.slice(
+                        ($scope.pageSize * ($scope.selPage - 1)),
+                        ($scope.selPage * $scope.pageSize)
+                    );
+                };
+
+                $scope.items = $scope.data.slice(0, $scope.pageSize);
+
+                for (var i = 0; i < $scope.newPages; i++) {
+                    $scope.pageList.push(i + 1);
+                }
+
+                $scope.selectPage = function (page) {
+
+                    if (page < 1 || page > $scope.pages) return;
+
+                    if (page > 2) {
+
+                        var newpageList = [];
+                        for (var i = (page - 3) ; i < ((page + 2) > $scope.pages ? $scope.pages : (page + 2)) ; i++) {
+                            newpageList.push(i + 1);
+                        }
+                        $scope.pageList = newpageList;
+                    }
+                    $scope.selPage = page;
+                    $scope.setData();
+                    $scope.isActivePage(page);
+                    console.log("The page selected：" + page);
+
+                };
+
+                $scope.isActivePage = function (page) {
+                    return $scope.selPage === page;
+                };
+
+                $scope.Previous = function () {
+                    $scope.selectPage($scope.selPage - 1);
+                };
+
+                $scope.Next = function () {
+                    $scope.selectPage($scope.selPage + 1);
+                };
+            });
+    }]);
+</script>
