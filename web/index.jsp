@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-  <title>登录</title>
+  <title>Twitter Search Enginee 1.0</title>
   <script src="./node_modules/angular/angular.js"></script>
   <meta name="Description" content="A tweet enginee search front end part">
   <link rel="stylesheet" href="assets/styles.css">
